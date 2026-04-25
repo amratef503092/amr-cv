@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { 
   FaGithub, FaLinkedin, FaEnvelope, FaPhone, FaMapMarkerAlt,
   FaGitAlt, FaApple
 } from 'react-icons/fa'
 import { SiFlutter, SiFirebase, SiGoogleplay } from 'react-icons/si'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { getProfile, getExperiences, getProjects, getEducation, getSkills } from './lib/api'
+import Login from './pages/admin/Login'
+import Dashboard from './pages/admin/Dashboard'
 import './App.css'
 
 // Animation variants
@@ -76,13 +81,24 @@ const FloatingParticles = () => {
 }
 
 // Hero Section
-const Hero = () => {
+const Hero = ({ profile }) => {
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 500], [0, 200])
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
 
+  const defaultProfile = {
+    name: 'Amr Atef Goda',
+    title: 'Flutter Developer | Software Engineer',
+    summary: 'Highly effective Software Engineer with 3+ years of experience specializing in Flutter application development for enterprise solutions.',
+    email: 'eng.amr.atef.goda@gmail.com',
+    phone: '+201030193111',
+    linkedin: 'amr-atef'
+  }
+
+  const data = { ...defaultProfile, ...profile }
+
   return (
-    <motion.section 
+    <motion.section
       className="hero"
       initial="hidden"
       animate="visible"
@@ -96,7 +112,7 @@ const Hero = () => {
         </motion.div>
         
         <motion.h1 variants={fadeInUp}>
-          <span className="gradient-text">Amr Atef Goda</span>
+          <span className="gradient-text">{data.name}</span>
         </motion.h1>
         
         <motion.div className="title-wrapper" variants={fadeInUp}>
@@ -108,8 +124,7 @@ const Hero = () => {
         </motion.div>
         
         <motion.p className="hero-description" variants={fadeInUp}>
-          Building beautiful, high-performance mobile applications with 3+ years of experience 
-          in Flutter development, specializing in clean architecture and exceptional user experiences.
+          {data.summary}
         </motion.p>
         
         <motion.div className="hero-cta" variants={fadeInUp}>
@@ -133,21 +148,21 @@ const Hero = () => {
         
         <motion.div className="social-links" variants={fadeInUp}>
           <motion.a 
-            href="mailto:eng.amr.atef.goda@gmail.com"
+            href={`mailto:${data.email}`}
             whileHover={{ scale: 1.2, rotate: 5 }}
             whileTap={{ scale: 0.9 }}
           >
             <FaEnvelope />
           </motion.a>
           <motion.a 
-            href="tel:+201030193111"
+            href={data.phone ? `tel:${data.phone}` : '#'}
             whileHover={{ scale: 1.2, rotate: -5 }}
             whileTap={{ scale: 0.9 }}
           >
             <FaPhone />
           </motion.a>
           <motion.a 
-            href="https://linkedin.com/in/amr-atef"
+            href={`https://linkedin.com/in/${data.linkedin}`}
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.2, y: -5 }}
@@ -172,21 +187,23 @@ const Hero = () => {
 }
 
 // Skills Section
-const Skills = () => {
-  const skills = [
-    { name: 'Flutter', icon: SiFlutter, level: 95, color: '#42A5F5' },
+const Skills = ({ skillsData = [] }) => {
+  const defaultSkills = [
+    { name: 'Flutter', level: 95, color: '#42A5F5' },
     { name: 'Dart', level: 90, color: '#00B4AB' },
-    { name: 'Firebase', icon: SiFirebase, level: 85, color: '#FFCA28' },
-    { name: 'Git', icon: FaGitAlt, level: 85, color: '#F05032' },
+    { name: 'Firebase', level: 85, color: '#FFCA28' },
+    { name: 'Git', level: 85, color: '#F05032' },
     { name: 'State Management', level: 90, color: '#AB47BC' },
     { name: 'API Integration', level: 88, color: '#66BB6A' },
     { name: 'Clean Architecture', level: 85, color: '#FF7043' },
     { name: 'Mobile Security', level: 80, color: '#EC407A' },
   ]
 
+  const skills = skillsData.length > 0 ? skillsData : defaultSkills
+
   return (
-    <motion.section 
-      id="skills" 
+    <motion.section
+      id="skills"
       className="skills-section"
       initial="hidden"
       whileInView="visible"
@@ -199,22 +216,24 @@ const Skills = () => {
         </h2>
         <p className="section-subtitle">Technologies I work with</p>
       </motion.div>
-      
+
       <motion.div className="skills-grid" variants={staggerContainer}>
         {skills.map((skill, index) => (
           <motion.div
-            key={skill.name}
+            key={skill.id || skill.name}
             className="skill-card"
             variants={scaleIn}
-            whileHover={{ 
-              scale: 1.05, 
+            whileHover={{
+              scale: 1.05,
               y: -10,
               boxShadow: `0 20px 40px ${skill.color}33`
             }}
             style={{ '--skill-color': skill.color }}
           >
             <div className="skill-icon" style={{ color: skill.color }}>
-              {skill.icon && <skill.icon />}
+              {skill.name === 'Flutter' && <SiFlutter />}
+              {skill.name === 'Firebase' && <SiFirebase />}
+              {skill.name === 'Git' && <FaGitAlt />}
             </div>
             <h3>{skill.name}</h3>
             <div className="skill-bar">
@@ -235,19 +254,14 @@ const Skills = () => {
 }
 
 // Experience Section
-const Experience = () => {
-  const experiences = [
+const Experience = ({ experiencesData = [] }) => {
+  const defaultExperiences = [
     {
       company: 'Tawuniya SA',
       role: 'Senior Flutter Developer',
       period: 'October 2025 - Present',
       location: 'Saudi Arabia',
-      description: [
-        'Lead development of mobile applications for Saudi Arabia\'s leading insurance provider',
-        'Architect features for policy management, claims submission, and customer portals',
-        'Implement secure payment systems and insurance claim processing workflows',
-        'Ensure compliance with financial regulations and data protection standards'
-      ],
+      description: 'Lead development of mobile applications for Saudi Arabia\'s leading insurance provider\nArchitect features for policy management, claims submission, and customer portals\nImplement secure payment systems and insurance claim processing workflows',
       color: '#6366F1'
     },
     {
@@ -255,12 +269,7 @@ const Experience = () => {
       role: 'Flutter Developer',
       period: 'Dec 2024 - October 2025',
       location: 'Egypt',
-      description: [
-        'Optimized Belton stock trading application for Egyptian stock exchange',
-        'Integrated payment gateways including Visa, Fawry, and other platforms',
-        'Implemented robust security measures for financial transactions',
-        'Enhanced UI/UX for a high-quality, user-friendly trading platform'
-      ],
+      description: 'Optimized Belton stock trading application for Egyptian stock exchange\nIntegrated payment gateways including Visa, Fawry\nImplemented robust security measures for financial transactions',
       color: '#EC407A'
     },
     {
@@ -268,19 +277,16 @@ const Experience = () => {
       role: 'Flutter Developer',
       period: 'Apr 2024 - Dec 2024',
       location: 'Riyadh, Saudi Arabia',
-      description: [
-        'Architected cross-platform mobile applications with Flutter',
-        'Collaborated with design teams to craft user-centric interfaces',
-        'Conducted code reviews and mentored development team',
-        'Translated client requirements into actionable features'
-      ],
+      description: 'Architected cross-platform mobile applications with Flutter\nCollaborated with design teams to craft user-centric interfaces\nConducted code reviews and mentored development team',
       color: '#42A5F5'
     }
   ]
 
+  const experiences = experiencesData.length > 0 ? experiencesData : defaultExperiences
+
   return (
-    <motion.section 
-      id="experience" 
+    <motion.section
+      id="experience"
       className="experience-section"
       initial="hidden"
       whileInView="visible"
@@ -293,11 +299,11 @@ const Experience = () => {
         </h2>
         <p className="section-subtitle">My professional journey</p>
       </motion.div>
-      
+
       <div className="timeline">
         {experiences.map((exp, index) => (
           <motion.div
-            key={exp.company}
+            key={exp.id || exp.company}
             className="timeline-item"
             variants={fadeInLeft}
             initial="hidden"
@@ -305,12 +311,12 @@ const Experience = () => {
             viewport={{ once: true }}
             transition={{ delay: index * 0.2 }}
           >
-            <motion.div 
+            <motion.div
               className="timeline-dot"
               style={{ backgroundColor: exp.color }}
               whileHover={{ scale: 1.3 }}
             />
-            <motion.div 
+            <motion.div
               className="timeline-content"
               whileHover={{ x: 10 }}
               style={{ '--timeline-color': exp.color }}
@@ -324,8 +330,8 @@ const Experience = () => {
                 <FaMapMarkerAlt /> {exp.location}
               </p>
               <ul className="timeline-details">
-                {exp.description.map((item, i) => (
-                  <motion.li 
+                {exp.description.split('\n').map((item, i) => (
+                  <motion.li
                     key={i}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -344,60 +350,46 @@ const Experience = () => {
 }
 
 // Projects Section
-const Projects = () => {
-  const projects = [
+const Projects = ({ projectsData = [] }) => {
+  const defaultProjects = [
     {
       name: 'Tawuniya',
       description: 'Insurance application for policy management, claims, and customer services',
       platforms: ['Android', 'iOS'],
       color: '#6366F1',
-      android: 'https://play.google.com/store/apps/details?id=com.tawuniya',
-      ios: 'https://apps.apple.com/app/tawuniya'
+      android_url: 'https://play.google.com/store/apps/details?id=com.tawuniya',
+      ios_url: 'https://apps.apple.com/app/tawuniya'
     },
     {
       name: 'Beltone',
       description: 'Stock trading application for Egyptian stock exchange',
       platforms: ['Android', 'iOS'],
       color: '#EC407A',
-      android: 'https://play.google.com/store/apps/details?id=com.beltone',
-      ios: 'https://apps.apple.com/app/beltone'
+      android_url: 'https://play.google.com/store/apps/details?id=com.beltone',
+      ios_url: 'https://apps.apple.com/app/beltone'
     },
     {
       name: 'Kafey',
       description: 'HR management application for employee services',
       platforms: ['Android', 'iOS'],
       color: '#42A5F5',
-      ios: 'https://apps.apple.com/app/kafey'
+      ios_url: 'https://apps.apple.com/app/kafey'
     },
     {
       name: 'London Eyes',
       description: 'Smart tour guide app for London landmarks, events, and recommendations',
       platforms: ['Android', 'iOS'],
       color: '#AB47BC',
-      android: 'https://play.google.com/store/apps/details?id=com.londoneyes',
-      ios: 'https://apps.apple.com/app/london-eyes'
-    },
-    {
-      name: 'Forsa App',
-      description: 'Enhanced functionality and user experience',
-      platforms: ['Android', 'iOS'],
-      color: '#FF7043',
-      android: 'https://play.google.com/store/apps/details?id=com.forsa',
-      ios: 'https://apps.apple.com/app/forsa'
-    },
-    {
-      name: 'Nmascom App',
-      description: 'Feature development and enhancements',
-      platforms: ['Android', 'iOS'],
-      color: '#66BB6A',
-      android: 'https://play.google.com/store/apps/details?id=com.nmascom',
-      ios: 'https://apps.apple.com/app/nmascom'
+      android_url: 'https://play.google.com/store/apps/details?id=com.londoneyes',
+      ios_url: 'https://apps.apple.com/app/london-eyes'
     }
   ]
 
+  const projects = projectsData.length > 0 ? projectsData : defaultProjects
+
   return (
-    <motion.section 
-      id="projects" 
+    <motion.section
+      id="projects"
       className="projects-section"
       initial="hidden"
       whileInView="visible"
@@ -410,14 +402,14 @@ const Projects = () => {
         </h2>
         <p className="section-subtitle">Apps I've built</p>
       </motion.div>
-      
+
       <motion.div className="projects-grid" variants={staggerContainer}>
         {projects.map((project, index) => (
           <motion.div
-            key={project.name}
+            key={project.id || project.name}
             className="project-card"
             variants={scaleIn}
-            whileHover={{ 
+            whileHover={{
               y: -10,
               boxShadow: `0 25px 50px ${project.color}44`
             }}
@@ -429,14 +421,14 @@ const Projects = () => {
             <h3>{project.name}</h3>
             <p>{project.description}</p>
             <div className="project-platforms">
-              {project.platforms.map(platform => (
+              {(project.platforms || ['Android', 'iOS']).map(platform => (
                 <span key={platform} className="platform-tag">{platform}</span>
               ))}
             </div>
             <div className="project-links">
-              {project.android && (
-                <motion.a 
-                  href={project.android}
+              {project.android_url && (
+                <motion.a
+                  href={project.android_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.1 }}
@@ -445,9 +437,9 @@ const Projects = () => {
                   <SiGoogleplay />
                 </motion.a>
               )}
-              {project.ios && (
-                <motion.a 
-                  href={project.ios}
+              {project.ios_url && (
+                <motion.a
+                  href={project.ios_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.1 }}
@@ -465,10 +457,30 @@ const Projects = () => {
 }
 
 // Education Section
-const Education = () => {
+const Education = ({ educationData = [] }) => {
+  const defaultEducation = [
+    {
+      degree: 'Bachelor of Computer Science',
+      school: 'Modern Academy',
+      period: '2019 - 2023',
+      gpa: '3.0',
+      details: ['Graduation Project: A+']
+    }
+  ]
+
+  const defaultCertificates = [
+    'Flutter & Dart Complete Development Course | Udemy 2023',
+    'Flutter Advanced Course Bloc and MVVM | Udemy 2023',
+    'Google Challenge Solutions | 2nd Place Hackathon 2022',
+    'Flutter Diploma | IT Sharks 2021-2022',
+    'Certificates: Orange Digital Center, IT Sharks'
+  ]
+
+  const education = educationData.length > 0 ? educationData : defaultEducation
+
   return (
-    <motion.section 
-      id="education" 
+    <motion.section
+      id="education"
       className="education-section"
       initial="hidden"
       whileInView="visible"
@@ -481,9 +493,9 @@ const Education = () => {
         </h2>
         <p className="section-subtitle">My learning journey</p>
       </motion.div>
-      
+
       <div className="education-grid">
-        <motion.div 
+        <motion.div
           className="education-card main-degree"
           variants={fadeInLeft}
           whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(99, 102, 241, 0.3)' }}
@@ -496,28 +508,22 @@ const Education = () => {
               🎓
             </motion.div>
           </div>
-          <h3>Bachelor of Computer Science</h3>
-          <h4>Modern Academy</h4>
-          <p className="education-period">2019 - 2023</p>
+          <h3>{education[0]?.degree || 'Bachelor of Computer Science'}</h3>
+          <h4>{education[0]?.school || 'Modern Academy'}</h4>
+          <p className="education-period">{education[0]?.period || '2019 - 2023'}</p>
           <div className="education-details">
-            <span className="gpa">GPA: 3.0</span>
+            <span className="gpa">GPA: {education[0]?.gpa || '3.0'}</span>
             <span className="project">Graduation Project: A+</span>
           </div>
         </motion.div>
-        
+
         <div className="certificates-grid">
-          {[
-            'Flutter & Dart Complete Development Course | Udemy 2023',
-            'Flutter Advanced Course Bloc and MVVM | Udemy 2023',
-            'Google Challenge Solutions | 2nd Place Hackathon 2022',
-            'Flutter Diploma | IT Sharks 2021-2022',
-            'Certificates: Orange Digital Center, IT Sharks'
-          ].map((cert, index) => (
+          {defaultCertificates.map((cert, index) => (
             <motion.div
               key={index}
               className="certificate-card"
               variants={scaleIn}
-              whileHover={{ 
+              whileHover={{
                 x: 5,
                 boxShadow: '0 10px 30px rgba(102, 126, 234, 0.2)'
               }}
@@ -528,8 +534,8 @@ const Education = () => {
           ))}
         </div>
       </div>
-      
-      <motion.div 
+
+      <motion.div
         className="membership-card"
         variants={fadeInUp}
         whileHover={{ scale: 1.02 }}
@@ -543,12 +549,21 @@ const Education = () => {
 }
 
 // Contact Section
-const Contact = () => {
+const Contact = ({ profile }) => {
+  const defaultProfile = {
+    email: 'eng.amr.atef.goda@gmail.com',
+    phone: '+201030193111',
+    location: 'Cairo, Egypt',
+    linkedin: 'amr-atef'
+  }
+  
+  const data = { ...defaultProfile, ...profile }
+  
   const contactInfo = [
-    { icon: FaEnvelope, label: 'Email', value: 'eng.amr.atef.goda@gmail.com', href: 'mailto:eng.amr.atef.goda@gmail.com' },
-    { icon: FaPhone, label: 'Phone', value: '+20 103 019 3111', href: 'tel:+201030193111' },
-    { icon: FaMapMarkerAlt, label: 'Location', value: 'Cairo, Egypt', href: null },
-    { icon: FaLinkedin, label: 'LinkedIn', value: 'linkedin.com/in/amr-atef', href: 'https://linkedin.com/in/amr-atef' },
+    { icon: FaEnvelope, label: 'Email', value: data.email, href: `mailto:${data.email}` },
+    { icon: FaPhone, label: 'Phone', value: data.phone, href: data.phone ? `tel:${data.phone}` : null },
+    { icon: FaMapMarkerAlt, label: 'Location', value: data.location, href: null },
+    { icon: FaLinkedin, label: 'LinkedIn', value: `linkedin.com/in/${data.linkedin}`, href: data.linkedin ? `https://linkedin.com/in/${data.linkedin}` : null },
   ]
 
   return (
@@ -674,6 +689,35 @@ const Footer = () => {
 // Main App
 function App() {
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [data, setData] = useState({
+    profile: null,
+    experiences: [],
+    projects: [],
+    education: [],
+    skills: []
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      const [profile, experiences, projects, education, skills] = await Promise.all([
+        getProfile(),
+        getExperiences(),
+        getProjects(),
+        getEducation(),
+        getSkills()
+      ])
+      setData({ profile, experiences: experiences || [], projects: projects || [], education: education || [], skills: skills || [] })
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -687,16 +731,30 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  if (loading) {
+    return (
+      <div className="App" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          style={{ fontSize: 40 }}
+        >
+          🚀
+        </motion.div>
+      </div>
+    )
+  }
+
   return (
     <div className="App">
-      <Hero />
-      <Skills />
-      <Experience />
-      <Projects />
-      <Education />
-      <Contact />
+      <Hero profile={data.profile} />
+      <Skills skillsData={data.skills} />
+      <Experience experiencesData={data.experiences} />
+      <Projects projectsData={data.projects} />
+      <Education educationData={data.education} />
+      <Contact profile={data.profile} />
       <Footer />
-      
+
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
