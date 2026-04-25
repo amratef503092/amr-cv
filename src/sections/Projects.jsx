@@ -8,7 +8,7 @@ import ScrollReveal from '../components/ScrollReveal'
 const DEFAULT_PROJECTS = [
   { name: 'Tawuniya', description: 'Insurance application for policy management, claims, and customer services', emoji: '🏛️', gradient: 'linear-gradient(180deg,#312e81,#4338ca,#6366f1)', platforms: ['Android', 'iOS'], android_url: 'https://play.google.com/store/apps/details?id=com.tawuniya', ios_url: 'https://apps.apple.com/app/tawuniya' },
   { name: 'Beltone', description: 'Stock trading application for Egyptian stock exchange with real-time data', emoji: '📈', gradient: 'linear-gradient(180deg,#4f46e5,#6366f1,#818cf8)', platforms: ['Android', 'iOS'], android_url: 'https://play.google.com/store/apps/details?id=com.beltone', ios_url: 'https://apps.apple.com/app/beltone' },
-  { name: 'Kafey', description: 'HR management application for employee services and workflows', emoji: '👔', gradient: 'linear-gradient(180deg,#6d28d9,#7c3aed,#8b5cf6)', platforms: ['iOS'], ios_url: 'https://apps.apple.com/app/kafey' },
+  { name: 'Kafey', description: 'HR management application for employee services and workflows', emoji: '👔', gradient: 'linear-gradient(180deg,#6d28d9,#7c3aed,#8b5cf6)', platforms: ['Android', 'iOS'], android_url: 'https://play.google.com/store/apps/details?id=com.kafey', ios_url: 'https://apps.apple.com/app/kafey' },
   { name: 'London Eyes', description: 'Smart tour guide for London landmarks, events, and recommendations', emoji: '👁️', gradient: 'linear-gradient(180deg,#5b21b6,#6d28d9,#7c3aed)', platforms: ['Android', 'iOS'], android_url: 'https://play.google.com/store/apps/details?id=com.londoneyes', ios_url: 'https://apps.apple.com/app/london-eyes' },
 ]
 
@@ -57,13 +57,13 @@ export default function Projects({ projects = [] }) {
                 </div>
                 <div className="project-links">
                   {project.android_url && (
-                    <motion.a href={project.android_url} target="_blank" rel="noopener noreferrer" className="store-link" whileHover={{ scale: 1.05 }}>
-                      <SiGoogleplay /> Play Store
+                    <motion.a href={project.android_url} target="_blank" rel="noopener noreferrer" className="store-link store-link--play" whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="Google Play">
+                      <SiGoogleplay />
                     </motion.a>
                   )}
                   {project.ios_url && (
-                    <motion.a href={project.ios_url} target="_blank" rel="noopener noreferrer" className="store-link" whileHover={{ scale: 1.05 }}>
-                      <FaApple /> App Store
+                    <motion.a href={project.ios_url} target="_blank" rel="noopener noreferrer" className="store-link store-link--apple" whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="App Store">
+                      <FaApple />
                     </motion.a>
                   )}
                 </div>
