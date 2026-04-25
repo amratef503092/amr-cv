@@ -1,3 +1,5 @@
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import App from './App'
@@ -7,39 +9,23 @@ import './index.css'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
-  
+
   if (loading) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         background: '#0F0F23',
         color: '#FFFFFF'
       }}>
-        Loading...
+        <div style={{ fontSize: '20px' }}>Loading...</div>
       </div>
     )
   }
-  
-  return user ? children : <Navigate to="/admin/login" />
-}
 
-function AdminRoutes() {
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-    </Routes>
-  )
+  return user ? children : <Navigate to="/admin/login" replace />
 }
 
 function Root() {
@@ -47,12 +33,32 @@ function Root() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public CV */}
           <Route path="/" element={<App />} />
-          <Route path="/admin/*" element={<AdminRoutes />} />
+          
+          {/* Admin Login */}
+          <Route path="/admin/login" element={<Login />} />
+          
+          {/* Protected Admin Dashboard */}
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Redirect any other /admin/* to login */}
+          <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
   )
 }
 
-export default Root
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <Root />
+  </StrictMode>
+)

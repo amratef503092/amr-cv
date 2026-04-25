@@ -1,16 +1,35 @@
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from './supabaseClient'
+
+// Check if Supabase is configured
+const isConfigured = () => {
+  if (!supabase) {
+    console.warn('Supabase not configured - using demo data')
+    return false
+  }
+  return true
+}
 
 // Experience CRUD
 export const getExperiences = async () => {
-  const { data, error } = await supabase
-    .from('experiences')
-    .select('*')
-    .order('start_date', { ascending: false })
-  if (error) throw error
-  return data
+  if (!isConfigured()) return null
+  try {
+    const { data, error } = await supabase
+      .from('experiences')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.error('Error loading experiences:', error.message)
+      return null
+    }
+    return data
+  } catch (error) {
+    console.error('Error loading experiences:', error.message)
+    return null
+  }
 }
 
 export const addExperience = async (experience) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('experiences')
     .insert([experience])
@@ -20,6 +39,7 @@ export const addExperience = async (experience) => {
 }
 
 export const updateExperience = async (id, experience) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('experiences')
     .update(experience)
@@ -30,6 +50,7 @@ export const updateExperience = async (id, experience) => {
 }
 
 export const deleteExperience = async (id) => {
+  if (!isConfigured()) return null
   const { error } = await supabase
     .from('experiences')
     .delete()
@@ -39,15 +60,25 @@ export const deleteExperience = async (id) => {
 
 // Projects CRUD
 export const getProjects = async () => {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data
+  if (!isConfigured()) return null
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.error('Error loading projects:', error.message)
+      return null
+    }
+    return data
+  } catch (error) {
+    console.error('Error loading projects:', error.message)
+    return null
+  }
 }
 
 export const addProject = async (project) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('projects')
     .insert([project])
@@ -57,6 +88,7 @@ export const addProject = async (project) => {
 }
 
 export const updateProject = async (id, project) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('projects')
     .update(project)
@@ -67,6 +99,7 @@ export const updateProject = async (id, project) => {
 }
 
 export const deleteProject = async (id) => {
+  if (!isConfigured()) return null
   const { error } = await supabase
     .from('projects')
     .delete()
@@ -76,15 +109,25 @@ export const deleteProject = async (id) => {
 
 // Education CRUD
 export const getEducation = async () => {
-  const { data, error } = await supabase
-    .from('education')
-    .select('*')
-    .order('end_date', { ascending: false })
-  if (error) throw error
-  return data
+  if (!isConfigured()) return null
+  try {
+    const { data, error } = await supabase
+      .from('education')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.error('Error loading education:', error.message)
+      return null
+    }
+    return data
+  } catch (error) {
+    console.error('Error loading education:', error.message)
+    return null
+  }
 }
 
 export const addEducation = async (education) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('education')
     .insert([education])
@@ -94,6 +137,7 @@ export const addEducation = async (education) => {
 }
 
 export const updateEducation = async (id, education) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('education')
     .update(education)
@@ -104,6 +148,7 @@ export const updateEducation = async (id, education) => {
 }
 
 export const deleteEducation = async (id) => {
+  if (!isConfigured()) return null
   const { error } = await supabase
     .from('education')
     .delete()
@@ -113,15 +158,25 @@ export const deleteEducation = async (id) => {
 
 // Skills CRUD
 export const getSkills = async () => {
-  const { data, error } = await supabase
-    .from('skills')
-    .select('*')
-    .order('level', { ascending: false })
-  if (error) throw error
-  return data
+  if (!isConfigured()) return null
+  try {
+    const { data, error } = await supabase
+      .from('skills')
+      .select('*')
+      .order('order_index', { ascending: true })
+    if (error) {
+      console.error('Error loading skills:', error.message)
+      return null
+    }
+    return data
+  } catch (error) {
+    console.error('Error loading skills:', error.message)
+    return null
+  }
 }
 
 export const addSkill = async (skill) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('skills')
     .insert([skill])
@@ -131,6 +186,7 @@ export const addSkill = async (skill) => {
 }
 
 export const updateSkill = async (id, skill) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('skills')
     .update(skill)
@@ -141,6 +197,7 @@ export const updateSkill = async (id, skill) => {
 }
 
 export const deleteSkill = async (id) => {
+  if (!isConfigured()) return null
   const { error } = await supabase
     .from('skills')
     .delete()
@@ -150,15 +207,25 @@ export const deleteSkill = async (id) => {
 
 // Profile/CV Info
 export const getProfile = async () => {
-  const { data, error } = await supabase
-    .from('profile')
-    .select('*')
-    .single()
-  if (error && error.code !== 'PGRST116') throw error
-  return data
+  if (!isConfigured()) return null
+  try {
+    const { data, error } = await supabase
+      .from('profile')
+      .select('*')
+      .single()
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error loading profile:', error.message)
+      return null
+    }
+    return data
+  } catch (error) {
+    console.error('Error loading profile:', error.message)
+    return null
+  }
 }
 
 export const updateProfile = async (profile) => {
+  if (!isConfigured()) return null
   const { data, error } = await supabase
     .from('profile')
     .upsert(profile)

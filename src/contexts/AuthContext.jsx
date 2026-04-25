@@ -8,9 +8,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!supabase) {
+      console.warn('Supabase not configured - auth disabled')
+      setLoading(false)
+      return
+    }
+
     // Check active sessions
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
+      setLoading(false)
+    }).catch((err) => {
+      console.error('Session error:', err.message)
       setLoading(false)
     })
 
@@ -24,18 +34,25 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signIn = async (email, password) => {
+    if (!supabase) {
+      throw new Error('Supabase not configured')
+    }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     return data
   }
 
   const signUp = async (email, password) => {
+    if (!supabase) {
+      throw new Error('Supabase not configured')
+    }
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
     return data
   }
 
   const signOut = async () => {
+    if (!supabase) return
     const { error } = await supabase.auth.signOut()
     if (error) throw error
   }

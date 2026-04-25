@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import { 
+import {
   FaGithub, FaLinkedin, FaEnvelope, FaPhone, FaMapMarkerAlt,
   FaGitAlt, FaApple
 } from 'react-icons/fa'
 import { SiFlutter, SiFirebase, SiGoogleplay } from 'react-icons/si'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getProfile, getExperiences, getProjects, getEducation, getSkills } from './lib/api'
-import Login from './pages/admin/Login'
-import Dashboard from './pages/admin/Dashboard'
 import './App.css'
 
 // Animation variants
